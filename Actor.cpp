@@ -14,6 +14,10 @@ void Actor::draw()
 {
 }
 
+void Actor::update()
+{
+}
+
 void Actor::addToChain(Actor& inActor)
 {
     removeFromChain();
@@ -38,5 +42,13 @@ void Actor::drawChain()
     {
         glLoadMatrixf(a->modelViewMatrix());
         a->draw();
+    }
+}
+
+void Actor::updateChain()
+{
+    for (Actor* a = mNextActor; a; a = a->mNextActor)
+    {
+        a->update();
     }
 }

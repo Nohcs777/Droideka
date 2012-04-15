@@ -7,10 +7,12 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
     mCanvas = new CanvasOpenGL(this);
+    loadCards();
+
     setCentralWidget(mCanvas);
 
     setWindowTitle(QString("Droideka"));
-    resize(QSize(640, 480));
+    resize(QSize(800, 600));
 
     setupMenu();
 
@@ -33,6 +35,39 @@ void MainWindow::keyPressEvent(QKeyEvent* inEvent)
     default:
         mCanvas->onKeyPress(inEvent);
         break;
+    }
+}
+
+void MainWindow::loadCards()
+{
+    QFile file(QString("cards.txt"));
+
+    if (file.open(QIODevice::ReadOnly))
+    {
+        qDebug() << "opened file";
+        QTextStream stream(&file);
+
+        QString front;
+        QString back;
+        int count;
+
+        stream >> front >> back >> count;
+
+        while (!stream.atEnd())
+        {
+            qDebug() << "Loading" << front << "and" << back;
+
+            for (int i = 0; i < count; ++i)
+                mCanvas->addCard(front, back);
+
+            stream >> front >> back >> count;
+        }
+
+        file.close();
+    }
+    else
+    {
+        qDebug() << "failed to open file";
     }
 }
 

@@ -10,10 +10,12 @@ public:
     virtual ~Actor();
 
     virtual void draw();
+    virtual void update();
 
     void addToChain(Actor& inActor);
     void removeFromChain();
     void drawChain();
+    void updateChain();
 
 private:
     Actor* mNextActor;

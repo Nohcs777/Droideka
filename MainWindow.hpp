@@ -21,6 +21,7 @@ private slots:
     void showAboutDialog();
 
 private:
+    void loadCards();
     void setupActions();
     void setupMenu();
     void toggleFullscreen();

@@ -22,6 +22,7 @@ CanvasOpenGL::CanvasOpenGL(QWidget *inParent)
     mTableActor = 0;
     mTableTexture = 0;
     mMouseMode = None;
+    mCardOffset = 0;
 }
 
 CanvasOpenGL::~CanvasOpenGL()
@@ -35,16 +36,40 @@ CanvasOpenGL::~CanvasOpenGL()
     deleteTexture(mTableTexture);
 }
 
+void CanvasOpenGL::addCard(const QString& inFront, const QString& inBack)
+{
+    // There is a chance this function will be called before OpenGL is setup.
+    // So, the requested images are simply queued up until the engine is ready.
+    mRequestedCards.append(inFront);
+    mRequestedCards.append(inBack);
+}
+
 void CanvasOpenGL::onPulse()
 {
-    for (QList<CardActor*>::Iterator i = mCardActors.begin();
-         i != mCardActors.end(); ++i)
+    while (mRequestedCards.size() > 1)
     {
-        CardActor& ca = *(*i);
-        ca.update();
+        GLuint frontTexture = loadCardTextureByName(mRequestedCards.front());
+        mRequestedCards.pop_front();
+        GLuint backTexture = loadCardTextureByName(mRequestedCards.front());
+        mRequestedCards.pop_front();
+
+        if (frontTexture && backTexture)
+        {
+            CardActor* cardActor = new CardActor(*mCardModel, frontTexture,
+                backTexture);
+
+            float x = float(mCardOffset++) * (mCardModel->width() + 0.5f);
+            cardActor->moveTo(x, 0.0f);
+
+            mHeadCardActor.addChildNode(*cardActor);
+            cardActor->addToChain(mHeadCardActor);
+            mCardActors.append(cardActor);
+        }
     }
 
-    //mCamera.changeRotation(1.0f);
+    mHeadCardActor.updateChain();
+
+    //mCamera.changeRotation(0.1f);
     //mCamera.changeAngle(-0.5f);
     mCamera.update();
 
@@ -87,7 +112,7 @@ void CanvasOpenGL::onPulse()
         x += delta[0];
         y += delta[1];
 
-        mSelectedCard->setPosition(x, y);
+        mSelectedCard->moveTo(x, y);
         mSelectedCard->confirmParent();
 
         if (!mSelectedCard->parent())
@@ -160,22 +185,6 @@ void CanvasOpenGL::initializeGL()
 
     mHeadCardActor.addChildNode(*mTableActor);
     mTableActor->addToChain(mHeadCardActor);
-
-    GLuint frontTexture = loadCardTextureByName(QString("localuprising.gif"));
-    GLuint backTexture = loadCardTextureByName(QString("liberation.gif"));
-
-    for (int i = 0; i < 40; ++i)
-    {
-        CardActor* cardActor = new CardActor(*mCardModel, frontTexture,
-            backTexture);
-
-        float x = float(i) * (mCardModel->width() + 0.5f);
-        cardActor->setPosition(x, 0.0f);
-
-        mHeadCardActor.addChildNode(*cardActor);
-        cardActor->addToChain(mHeadCardActor);
-        mCardActors.append(cardActor);
-    }
 
     mCamera.setDistance(20.0f);
     mCamera.setAngle(-45.0f);
@@ -348,10 +357,68 @@ void CanvasOpenGL::wheelEvent(QWheelEvent* inEvent)
     mCamera.changeDistance(inEvent->delta() > 0 ? -change : change);
 }
 
+void CanvasOpenGL::suggestCascade(float inX, float inY)
+{
+    if (mSelectedCard && mMouseMode == None)
+    {
+        mSelectedCard->cascade(inX, inY);
+    }
+}
+
 void CanvasOpenGL::keyPressEvent(QKeyEvent* inEvent)
 {
+    const float Cascade = 2.0f;
+
     switch (inEvent->key())
     {
+    case Qt::Key_1:
+        if (inEvent->modifiers() & Qt::KeypadModifier)
+            suggestCascade(-Cascade, -Cascade);
+        break;
+
+    case Qt::Key_2:
+        if (inEvent->modifiers() & Qt::KeypadModifier)
+            suggestCascade(0.0f, -Cascade);
+        break;
+
+    case Qt::Key_3:
+        if (inEvent->modifiers() & Qt::KeypadModifier)
+            suggestCascade(Cascade, -Cascade);
+        break;
+
+    case Qt::Key_4:
+        if (inEvent->modifiers() & Qt::KeypadModifier)
+            suggestCascade(-Cascade, 0.0f);
+        break;
+
+    case Qt::Key_5:
+        if (inEvent->modifiers() & Qt::KeypadModifier)
+            suggestCascade(0.0f, 0.0f);
+        break;
+
+    case Qt::Key_6:
+        if (inEvent->modifiers() & Qt::KeypadModifier)
+            suggestCascade(Cascade, 0.0f);
+        break;
+
+    case Qt::Key_7:
+        if (inEvent->modifiers() & Qt::KeypadModifier)
+            suggestCascade(-Cascade, Cascade);
+        break;
+
+    case Qt::Key_8:
+        if (inEvent->modifiers() & Qt::KeypadModifier)
+            suggestCascade(0.0f, Cascade);
+        break;
+
+    case Qt::Key_9:
+        if (inEvent->modifiers() & Qt::KeypadModifier)
+            suggestCascade(Cascade, Cascade);
+        break;
+
+    case Qt::Key_Backslash:
+        qDebug() << "Number of loaded textures:" << mTexturesByName.size();
+        break;
 
     default:
         break;
@@ -389,6 +456,13 @@ GLuint CanvasOpenGL::loadCardTextureByName(const QString& inName)
 
         if (!image.isNull())
         {
+            if (image.width() > image.height())
+            {
+                QMatrix matrix;
+                matrix.rotate(90.0);
+                image = image.transformed(matrix);
+            }
+
             QImage square(QSize(512, 512), image.format());
             QPainter painter(&square);
             painter.drawImage(QRect(0, 0, 512, 512), image);

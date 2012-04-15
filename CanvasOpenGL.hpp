@@ -19,6 +19,7 @@ public:
     ~CanvasOpenGL();
 
     void onKeyPress(QKeyEvent* inEvent);
+    void addCard(const QString& inFront, const QString& inBack);
 
 protected slots:
     void onPulse();
@@ -38,6 +39,7 @@ private:
     void unproject(GLint inX, GLint inY, GLfloat inDepth,
         const mat4f& inModelViewProjectionMatrix,
         GLfloat* inResult);
+    void suggestCascade(float inX, float inY);
 
     enum { None, RotateCamera, PanCamera, MoveCard } mMouseMode;
 
@@ -59,6 +61,7 @@ private:
     QList<CardActor*> mCardActors;
     QVector<GLuint> mTextures;
     QMap<QString, GLuint> mTexturesByName;
+    QList<QString> mRequestedCards;
 
     mat4f mProjectionMatrix;
     GLint mViewport[4];
@@ -70,6 +73,7 @@ private:
     PingModel* mPingModel;
     TableActor* mTableActor;
     GLuint mTableTexture;
+    int mCardOffset;
 };
 
 #endif

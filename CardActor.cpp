@@ -116,6 +116,16 @@ void CardActor::flip180()
     mFlipStepsLeft += 8;
 }
 
+void CardActor::cascade(float inX, float inY)
+{
+    for (CardActor* ca = mLineage->mChild; ca; ca = ca->mChild)
+    {
+        ca->mPosition[0] = ca->mParent->mPosition[0] + inX;
+        ca->mPosition[1] = ca->mParent->mPosition[1] + inY;
+        ca->confirmParent();
+    }
+}
+
 void CardActor::setThickness(float inThickness)
 {
     mThickness = inThickness;
@@ -128,19 +138,19 @@ void CardActor::setThickness(float inThickness)
     updateUnderneath();
 }
 
-void CardActor::setPosition(float inX, float inY)
+void CardActor::moveTo(float inX, float inY)
 {
     float deltaX = inX - mPosition[0];
     float deltaY = inY - mPosition[1];
-    move(deltaX, deltaY);
+    moveBy(deltaX, deltaY);
 }
 
-void CardActor::move(float inDeltaX, float inDeltaY)
+void CardActor::moveBy(float inDeltaX, float inDeltaY)
 {
     mPosition[0] += inDeltaX;
     mPosition[1] += inDeltaY;
 
-    if (mChild) mChild->move(inDeltaX, inDeltaY);
+    if (mChild) mChild->moveBy(inDeltaX, inDeltaY);
 }
 
 void CardActor::willUpdate()

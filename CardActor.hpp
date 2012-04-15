@@ -13,7 +13,7 @@ public:
     virtual ~CardActor();
 
     virtual void draw();
-    void update();
+    virtual void update();
 
     inline void setHighlight(float* inHighlight) { mHighlight = inHighlight; }
 
@@ -39,9 +39,10 @@ public:
     bool overlaps(const CardActor& inCardActor);
     void rotate90();
     void flip180();
+    void cascade(float inX, float inY);
     void setThickness(float inThickness);
-    void setPosition(float inX, float inY);
-    void move(float inDeltaX, float inDeltaY);
+    void moveTo(float inX, float inY);
+    void moveBy(float inDeltaX, float inDeltaY);
 
 protected:
     virtual void willUpdate();
