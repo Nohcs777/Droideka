@@ -2,6 +2,8 @@
 #include "PingActor.hpp"
 #include <QtOpenGL>
 
+#define LDB qDebug() << __LINE__ << "yarr"
+
 CanvasOpenGL::CanvasOpenGL(QWidget *inParent)
     : QGLWidget(QGLFormat(QGL::AlphaChannel
                           | QGL::Rgba
@@ -23,6 +25,7 @@ CanvasOpenGL::CanvasOpenGL(QWidget *inParent)
     mTableTexture = 0;
     mMouseMode = None;
     mZoomSpeed = 0.0f;
+    mLastAddedCard = 0;
 }
 
 CanvasOpenGL::~CanvasOpenGL()
