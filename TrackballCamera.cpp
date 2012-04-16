@@ -1,6 +1,6 @@
 #include "TrackballCamera.hpp"
 
-static const float MinimumDistance = 1.0f;
+static const float MinimumDistance = 4.0f;
 
 TrackballCamera::TrackballCamera()
     : mDistance(10.0f), mRotation(0.0f), mAngle(0.0f)
@@ -47,14 +47,26 @@ void TrackballCamera::changePosition(const vec3f& inDelta)
     mPosition[2] += inDelta[2];
 }
 
-void TrackballCamera::setDistance(float inDistance)
+bool TrackballCamera::setDistance(float inDistance)
 {
-    mDistance = inDistance < MinimumDistance ? MinimumDistance : inDistance;
+    bool outAvoidedMinimum = true;
+
+    if (inDistance < MinimumDistance)
+    {
+        mDistance = MinimumDistance;
+        outAvoidedMinimum = false;
+    }
+    else
+    {
+        mDistance = inDistance;
+    }
+
+    return outAvoidedMinimum;
 }
 
-void TrackballCamera::changeDistance(float inDelta)
+bool TrackballCamera::changeDistance(float inDelta)
 {
-    setDistance(mDistance + inDelta);
+    return setDistance(mDistance + inDelta);
 }
 
 void TrackballCamera::setRotation(float inRotation)

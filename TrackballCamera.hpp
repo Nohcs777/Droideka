@@ -19,8 +19,8 @@ public:
     void setPosition(const vec3f& inPosition);
     void changePosition(const vec3f& inDelta);
 
-    void setDistance(float inDistance);
-    void changeDistance(float inDelta);
+    bool setDistance(float inDistance);
+    bool changeDistance(float inDelta);
 
     void setRotation(float inRotation);
     void changeRotation(float inDelta);

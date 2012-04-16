@@ -40,6 +40,7 @@ private:
         const mat4f& inModelViewProjectionMatrix,
         GLfloat* inResult);
     void suggestCascade(float inX, float inY);
+    void loadRequestedCards();
 
     enum { None, RotateCamera, PanCamera, MoveCard } mMouseMode;
 
@@ -57,6 +58,7 @@ private:
     void testFolders();
     GLuint loadCardTextureByName(const QString& inName);
 
+    CardActor* mLastAddedCard;
     CardActor* mSelectedCard;
     QList<CardActor*> mCardActors;
     QVector<GLuint> mTextures;
@@ -73,7 +75,7 @@ private:
     PingModel* mPingModel;
     TableActor* mTableActor;
     GLuint mTableTexture;
-    int mCardOffset;
+    float mZoomSpeed;
 };
 
 #endif

@@ -22,7 +22,7 @@ CanvasOpenGL::CanvasOpenGL(QWidget *inParent)
     mTableActor = 0;
     mTableTexture = 0;
     mMouseMode = None;
-    mCardOffset = 0;
+    mZoomSpeed = 0.0f;
 }
 
 CanvasOpenGL::~CanvasOpenGL()
@@ -44,7 +44,7 @@ void CanvasOpenGL::addCard(const QString& inFront, const QString& inBack)
     mRequestedCards.append(inBack);
 }
 
-void CanvasOpenGL::onPulse()
+void CanvasOpenGL::loadRequestedCards()
 {
     while (mRequestedCards.size() > 1)
     {
@@ -58,19 +58,51 @@ void CanvasOpenGL::onPulse()
             CardActor* cardActor = new CardActor(*mCardModel, frontTexture,
                 backTexture);
 
-            float x = float(mCardOffset++) * (mCardModel->width() + 0.5f);
-            cardActor->moveTo(x, 0.0f);
-
             mHeadCardActor.addChildNode(*cardActor);
             cardActor->addToChain(mHeadCardActor);
             mCardActors.append(cardActor);
+
+            if (mLastAddedCard)
+            {
+                cardActor->setChild(mLastAddedCard);
+                //mLastAddedCard->setChild(cardActor);
+            }
+
+            mLastAddedCard = cardActor;
+        }
+    }
+}
+
+void CanvasOpenGL::onPulse()
+{
+    loadRequestedCards();
+    mHeadCardActor.updateChain();
+
+    const float RateOfDecay = 0.25f;
+    bool didAvoidMinimum = mCamera.changeDistance(mZoomSpeed);
+
+    if (!didAvoidMinimum)
+    {
+        mZoomSpeed = 0.0f;
+    }
+    else
+    {
+        if (mZoomSpeed > 0.0f)
+        {
+            mZoomSpeed -= RateOfDecay;
+
+            if (mZoomSpeed < 0.0f)
+                mZoomSpeed = 0.0f;
+        }
+        else if (mZoomSpeed < 0.0f)
+        {
+            mZoomSpeed += RateOfDecay;
+
+            if (mZoomSpeed > 0.0f)
+                mZoomSpeed = 0.0f;
         }
     }
 
-    mHeadCardActor.updateChain();
-
-    //mCamera.changeRotation(0.1f);
-    //mCamera.changeAngle(-0.5f);
     mCamera.update();
 
     mHeadCardActor.updateMatrices(mat4f(), mCamera.matrix());
@@ -353,8 +385,23 @@ void CanvasOpenGL::mouseMoveEvent(QMouseEvent* inEvent)
 
 void CanvasOpenGL::wheelEvent(QWheelEvent* inEvent)
 {
-    const float change = 3.0f;
-    mCamera.changeDistance(inEvent->delta() > 0 ? -change : change);
+    const float Change = 2.0f;
+    if (inEvent->delta() > 0)
+    {
+        if (mZoomSpeed > 0.0f)
+            mZoomSpeed = -Change;
+        else
+            mZoomSpeed -= Change;
+    }
+    else
+    {
+        if (mZoomSpeed < 0.0f)
+            mZoomSpeed = Change;
+        else
+            mZoomSpeed += Change;
+    }
+
+    //mZoomSpeed += (inEvent->delta() > 0 ? -Change : Change);
 }
 
 void CanvasOpenGL::suggestCascade(float inX, float inY)
