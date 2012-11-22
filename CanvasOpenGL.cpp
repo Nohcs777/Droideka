@@ -211,7 +211,7 @@ void CanvasOpenGL::onPulse()
 
 void CanvasOpenGL::initializeGL()
 {
-    mTableTexture = bindTexture(QImage("wood.jpg"), GL_TEXTURE_2D);
+    mTableTexture = bindTexture(QImage("wood.png"), GL_TEXTURE_2D);
 
     mPingModel = new PingModel;
     mCardModel = new CardModel;
