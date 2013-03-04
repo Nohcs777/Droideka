@@ -3,8 +3,8 @@
 
 #include <QNetworkRequest>
 #include <QFile>
-#include <QTextOStream>
 #include <QMessageBox>
+#include <QTextStream>
 
 LoginWindow::LoginWindow(QWidget *parent) :
     QMainWindow(parent),

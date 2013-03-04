@@ -2,6 +2,7 @@
 #include <QtGui>
 #include <QKeyEvent>
 #include <QMenuBar>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
@@ -12,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setCentralWidget(mCanvas);
 
     setWindowTitle(QString("Droideka"));
-    resize(QSize(800, 600));
+    resize(QSize(1280, 720));
 
     setupMenu();
 
